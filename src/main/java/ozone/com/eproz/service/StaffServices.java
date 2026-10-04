@@ -14,7 +14,9 @@ import ozone.com.eproz.dto.StaffDtoRequest;
 import ozone.com.eproz.dto.StaffDtoResponse;
 import ozone.com.eproz.exception.ResourceNotFoundException;
 import ozone.com.eproz.model.StaffModel;
+import ozone.com.eproz.model.UserModel;
 import ozone.com.eproz.repository.StaffRepository;
+import ozone.com.eproz.repository.UserRepository;
 
 @Service 
 @RequiredArgsConstructor
@@ -24,6 +26,7 @@ import ozone.com.eproz.repository.StaffRepository;
 public class StaffServices {
 
     private final StaffRepository staffs;
+    private final UserRepository users;
 
     @Transactional
     public StaffDtoResponse createStaff(StaffDtoRequest userDtoRequest) {
@@ -39,6 +42,7 @@ public class StaffServices {
             userDtoRequest.dateOfjoin(),
             userDtoRequest.position()
         );
+        staffModel.setUser(getUserOrNull(userDtoRequest.userId()));
         return StaffDtoResponse.from(staffs.save(staffModel));
     }
     
@@ -59,6 +63,7 @@ public class StaffServices {
 
         staffModel.update(u.email(), u.age(), u.mname(), u.lname(), u.gender(), u.fname(), u.address(),
                 u.status(), u.dateOfjoin(), u.position());
+        staffModel.setUser(getUserOrNull(u.userId()));
         return StaffDtoResponse.from(staffModel);
     }
 
@@ -66,6 +71,11 @@ public class StaffServices {
     private StaffModel getOrThrow(UUID id) {
         return staffs.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User", id));
+    }
+
+    private UserModel getUserOrNull(UUID userId) {
+        return userId == null ? null : users.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", userId));
     }
 
     

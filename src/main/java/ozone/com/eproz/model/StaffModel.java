@@ -10,7 +10,6 @@ import ozone.com.eproz.enums.GenderEnum;
 @Entity
 @Table(name = "staff", uniqueConstraints = {
         @UniqueConstraint(columnNames = "email"),
-        @UniqueConstraint(columnNames = "username")
 })
 @Getter
 @Setter
@@ -53,6 +52,10 @@ public class StaffModel extends Auditable {
     @Column(name = "position", nullable = false, length = 120)
     private String position;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", unique = true)
+    private UserModel user;
+
     public StaffModel(String email, String fname, String mname, String lname, GenderEnum gender, int age,
                      String address, String status, LocalDate dateOfjoin, String position) {
         this.email = email;
@@ -79,5 +82,15 @@ public class StaffModel extends Auditable {
         this.status = status;
         this.dateOfjoin = dateOfjoin;
         this.position = position;
+    }
+
+    public void setUser(UserModel user) {
+        if (this.user != null && this.user.getStaff() == this) {
+            this.user.setStaff(null);
+        }
+        this.user = user;
+        if (user != null && user.getStaff() != this) {
+            user.setStaff(this);
+        }
     }
 }

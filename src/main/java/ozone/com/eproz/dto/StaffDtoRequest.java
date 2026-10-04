@@ -1,6 +1,7 @@
 package ozone.com.eproz.dto;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 import jakarta.validation.constraints.*;
 import ozone.com.eproz.enums.GenderEnum;
@@ -41,6 +42,8 @@ public record StaffDtoRequest(
 
     @NotBlank(message = "Position is required")
     @Size(max = 120, message = "Position must be less than or equal to 120 characters")
-    String position
+    String position,
+
+    UUID userId
 ) {
 }

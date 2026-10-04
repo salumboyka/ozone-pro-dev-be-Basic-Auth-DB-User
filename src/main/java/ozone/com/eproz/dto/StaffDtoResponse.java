@@ -19,6 +19,7 @@ public record StaffDtoResponse(
     String status,
     LocalDate dateOfjoin,
     String position,
+    UUID userId,
     Instant createdAt,
     Instant updatedAt
 ) {
@@ -35,6 +36,7 @@ public record StaffDtoResponse(
             u.getStatus(),
             u.getDateOfjoin(),
             u.getPosition(),
+            u.getUser() == null ? null : u.getUser().getId(),
             u.getCreatedAt(),
             u.getUpdatedAt()
         );

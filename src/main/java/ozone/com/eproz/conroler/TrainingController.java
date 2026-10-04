@@ -1,9 +1,14 @@
 package ozone.com.eproz.conroler;
 
 import java.net.URI;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -73,12 +78,27 @@ public class TrainingController {
 	@GetMapping
 	public PageResponse<TrainingDtoResponse> findAll(
 			@RequestParam(required = false) UUID staffId,
-			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "10") int size) {
-		if (page < 0 || size < 1 || size > 100) {
-			throw new IllegalArgumentException("Page must be non-negative and size must be between 1 and 100");
+			@PageableDefault(size = 10, sort = "title", direction = Sort.Direction.ASC) Pageable pageable) {
+		return trainingServices.findAll(staffId, sanitizePageable(pageable, "title"));
+	}
+
+	private Pageable sanitizePageable(Pageable pageable, String defaultProperty) {
+		if (pageable == null) {
+			return PageRequest.of(0, 10, Sort.by(defaultProperty).ascending());
 		}
-		return trainingServices.findAll(staffId, PageRequest.of(page, size));
+
+		List<Sort.Order> safeOrders = pageable.getSort().stream()
+				.filter(order -> "title".equals(order.getProperty()))
+				.map(order -> order.isAscending()
+						? Sort.Order.asc(defaultProperty)
+						: Sort.Order.desc(defaultProperty))
+				.collect(Collectors.toList());
+
+		if (safeOrders.isEmpty()) {
+			return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(defaultProperty).ascending());
+		}
+
+		return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(safeOrders));
 	}
 
 	@GetMapping("/{id}")
